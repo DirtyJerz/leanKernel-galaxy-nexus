@@ -410,4 +410,11 @@ config FORCE_DOCK_MODE
 	  A sysfs interface to force phone into a selectable
 	  docked mode when POGO dock detection fails.
 
+config TUNA_ASRAM
+	bool "Additional Safe RAM of ~50 MB"
+	default n
+	help
+	  If enabled, reclaims 50 MB from the reserved RAM. Reclaming 
+	  max 50 MB is safe and makes 1080p camera
+	  functionality working.
 endif
