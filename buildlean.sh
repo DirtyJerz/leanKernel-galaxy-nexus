@@ -1,14 +1,26 @@
 #!/bin/bash
+gist="4464048"
+
+explog () {
+  git log --pretty=format:"%aN: %s" -n 50 > /tmp/explog
+  cd /lk/$gist
+  cp /tmp/explog gistfile1.txt
+  git commit -am "leanKernel v${1}"
+  git push -f origin master
+}
 
 [[ `diff arch/arm/configs/tuna_defconfig .config ` ]] && \
 	{ echo "Unmatched defconfig!"; exit -1; } 
 
 sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-leanKernel-${1}\"/ .config
+[[ $1 == *180 ]] && sed -i 's/.*UNLOCK_180.*$/CONFIG_UNLOCK_180MHZ=y/' .config \
+  || sed -i 's/.*UNLOCK_180.*$/# CONFIG_UNLOCK_180MHZ is not set/' .config
 
 make ARCH=arm CROSS_COMPILE=/data/linaro/android-toolchain-eabi/bin/arm-linux-androideabi- -j2
 
 cp arch/arm/boot/zImage mkboot/
-#sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"\"/ .config
+sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"\"/ .config
+sed -i 's/.*UNLOCK_180.*$/# CONFIG_UNLOCK_180MHZ is not set/' .config
 cp .config arch/arm/configs/tuna_defconfig
 
 cd mkboot
@@ -47,8 +59,9 @@ if [[ $1 != *dev* && $1 != *rc* ]]; then
 fi
 if [[ $2 == "upload" ]]; then
   cd /lk/toro
-  if [[ $1 != *dev* && $1 != *rc* ]]; then
-	git log --pretty=format:"%aN: %s" -n 200 > /tmp/exp.log
+  if [[ $1 == *exp* ]]; then
+#	git log --pretty=format:"%aN: %s" -n 200 > /tmp/exp.log
+	explog $1
   fi
   /data/utils/gnex_ftpupload42.sh $zipfile $1 $mf
 fi
